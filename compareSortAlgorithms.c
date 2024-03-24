@@ -43,7 +43,22 @@ void mergeSort(int pData[], int l, int r)
 // extraMemoryAllocated counts bytes of memory allocated
 void insertionSort(int* pData, int n)
 {
-	
+	int i;
+	int j;
+	int item;
+
+	for (i = 1; i < n; i++){
+		item = pData[i];
+
+		for (j = i - 1; j >= 0; j--){
+			if (pData[j] > item){
+				pData[j+1] = pData[j];
+			}
+			else
+				break;
+		}
+		pData[j + 1] = item;
+	}
 }
 
 // implement bubble sort
