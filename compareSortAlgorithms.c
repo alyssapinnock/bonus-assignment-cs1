@@ -36,6 +36,8 @@ void heapSort(int arr[], int n)
 // extraMemoryAllocated counts bytes of extra memory allocated
 void mergeSort(int pData[], int l, int r)
 {
+	int mid = (l+r)/2;
+	
 	
 }
 
@@ -80,13 +82,27 @@ int parseData(char *inputFileName, int **ppData)
 {
 	FILE* inFile = fopen(inputFileName,"r");
 	int dataSz = 0;
+	int i, n, *data;
 	*ppData = NULL;
 	
 	if (inFile)
 	{
 		fscanf(inFile,"%d\n",&dataSz);
-		*ppData = (int *)Alloc(sizeof(int) * dataSz);
+		*ppData = (int *)malloc(sizeof(int) * dataSz);
 		// Implement parse data block
+		if (*ppData == NULL)
+		{
+			printf("Cannot allocate memory\n");
+			exit(-1);
+		}
+		for (i=0;i<dataSz;++i)
+		{
+			fscanf(inFile, "%d ",&n);
+			data = *ppData + i;
+			*data = n;
+		}
+
+		fclose(inFile);
 	}
 	
 	return dataSz;
