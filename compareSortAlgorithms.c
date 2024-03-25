@@ -1,7 +1,9 @@
 #include <time.h>
 #include <stdlib.h>
 #include <stdio.h>
+#include <string.h>
 
+void printArray (int pData[], int dataSz);
 int extraMemoryAllocated;
 
 void *Alloc(size_t sz)
@@ -26,18 +28,96 @@ size_t Size(void* ptr)
 	return ((size_t*)ptr)[-1];
 }
 
+void heapify(int arr[], int n, int i){ // Created heapify function to call within heapSort
+	int big = i;
+	int l = 2*i + 1;
+	int r = 2*i + 2;
+
+	if (l < n && arr[r] > arr[big]){
+		big = l;
+	}
+	if (r < n && arr[l] > arr[big]){
+		big = r;
+	}
+	if (big != i){
+		int tmp = arr[i];
+		arr[i] = arr[big];
+		arr[big] = tmp;
+
+		heapify(arr, n, big);
+	}
+}
 // implements heap sort
 // extraMemoryAllocated counts bytes of memory allocated
-void heapSort(int arr[], int n)
-{
+void heapSort(int arr[], int n) 
+{	
+	for (int i = n/2 - 1; i >= 0; i--){
+		heapify(arr, n, i);
+	}
+	for (int i = n - 1; i >= 0; i--){
+		int tmp = arr[0]; // swapping
+		arr[0] = arr[i];
+		arr[i] = tmp;
+
+		heapify(arr, i, 0);
+	}
+}
+
+void merge(int pData[], int l, int m, int r){
+	int i, j, k;
+	int n1 = m - l + 1;
+	int n2 = r - m;
+
+	int *L = (int*) Alloc(n1*sizeof(int));
+	int *R = (int*) Alloc(n2*sizeof(int));
+
+	for(i = 0; i < n1; i++){
+		L[i] = pData[l + i];
+	}
+	for (j = 0; j < n2; j++){
+		R[j] = pData[m + 1 + j];
+	}
+
+	i = 0;
+	j = 0;
+	k = l;
+
+	while (i < n1 && j < n2){
+		if (L[i] <= R[j]){
+			pData[k] = L[i];
+			i++;
+		}
+		else{
+			pData[k] = R[j];
+			j++;
+		}
+		k++;
+	}
+
+	while (j < n2){
+		pData[k] = R[j];
+		j++;
+		k++;
+	}
+
+	DeAlloc(L);
+	DeAlloc(R);
+
 }
 
 // implement merge sort
 // extraMemoryAllocated counts bytes of extra memory allocated
 void mergeSort(int pData[], int l, int r)
 {
-	int mid = (l+r)/2;
-	
+	if (l < r){
+		int mid = (l+r)/2;
+		
+		mergeSort(pData, l, mid);
+		mergeSort(pData, mid + 1, r);
+
+		merge(pData, l, mid, r);
+
+	}
 	
 }
 
@@ -67,6 +147,18 @@ void insertionSort(int* pData, int n)
 // extraMemoryAllocated counts bytes of extra memory allocated
 void bubbleSort(int* pData, int n)
 {
+	int i, j, tmp;
+
+	for (i = 0; i < n-1; i++){
+		for (j = 0; j < n-i-1; j++){
+			if (pData[j] > pData[j+1]){
+				tmp = pData[j]; // Implementing swap
+				pData[j] = pData[j+1];
+				pData[j+1] = tmp;
+			}
+			printArray(pData, n);
+		}
+	}
 	
 }
 
@@ -74,7 +166,20 @@ void bubbleSort(int* pData, int n)
 // extraMemoryAllocated counts bytes of extra memory allocated
 void selectionSort(int* pData, int n)
 {
-	
+	int i, j, min, tmp;
+
+	for (i = 0; i < n-1; i++){
+		min = i;
+		for (j = i + 1; j < n; j++){
+			if (pData[j] < pData[min]){
+				min = j;
+				tmp = pData[i];
+				pData[i] = pData[min];
+				pData[min] = tmp;
+			}
+			printArray(pData, n);
+		}
+	}
 }
 
 // parses input file to an integer array
@@ -111,20 +216,21 @@ int parseData(char *inputFileName, int **ppData)
 // prints first and last 100 items in the data array
 void printArray(int pData[], int dataSz)
 {
-	int i, sz = dataSz - 100;
+	int i, sz = (dataSz > 100 ? dataSz - 100 : 0);
+	int firstHundred = (dataSz < 100 ? dataSz : 100);
+	
 	printf("\tData:\n\t");
-	for (i=0;i<100;++i)
-	{
-		printf("%d ",pData[i]);
+	
+	for (i=0;i<firstHundred;++i){
+		printf("%d ", pData[i]);
 	}
 	printf("\n\t");
-	
-	for (i=sz;i<dataSz;++i)
-	{
-		printf("%d ",pData[i]);
+	for (i=sz;i<dataSz;++i){
+		printf("%d ", pData[i]);
 	}
 	printf("\n\n");
 }
+
 
 int main(void)
 {
@@ -195,7 +301,7 @@ int main(void)
 		memcpy(pDataCopy, pDataSrc, dataSz*sizeof(int));
 		extraMemoryAllocated = 0;
 		start = clock();
-		heapSort(pDataCopy, 0, dataSz - 1);
+		heapSort(pDataCopy, dataSz);
 		end = clock();
 		cpu_time_used = ((double) (end - start)) / CLOCKS_PER_SEC;
 		printf("\truntime\t\t\t: %.1lf\n",cpu_time_used);
